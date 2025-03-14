@@ -1,54 +1,83 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 주요 컴포넌트 설명
 
-Currently, two official plugins are available:
+### App.tsx
+- 애플리케이션의 메인 컴포넌트
+- 상태 관리 및 메시지 처리 로직 포함
+- 스트리밍 응답 처리
+- 로컬 스토리지 연동
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### ChatInput
+- 사용자 입력 처리
+- 로딩 상태 표시
+- 폼 제출 처리
 
-## Expanding the ESLint configuration
+### ChatMessage
+- 개별 메시지 렌더링
+- 마크다운 형식 지원
+- 사용자/어시스턴트 메시지 스타일 구분
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### ChatMessages
+- 전체 메시지 목록 관리
+- 스크롤 처리
+- 로딩 및 에러 상태 표시
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 주요 기능 설명
+
+### 스트리밍 응답
+- 서버로부터 청크 단위로 응답을 받아 실시간으로 표시
+- 응답 스트림 처리를 위한 TextDecoder 사용
+- 진행 중인 응답을 위한 ref 사용
+
+### 로컬 스토리지
+- 대화 내용 자동 저장
+- 페이지 새로고침 시에도 대화 내용 유지
+- JSON 형식으로 데이터 저장
+
+### 에러 처리
+- 네트워크 오류 자동 재시도 (최대 3회)
+- 사용자 친화적인 에러 메시지
+- 점진적 재시도 간격 적용
+
+### 반응형 디자인
+- 데스크톱/태블릿/모바일 대응
+- 다크 모드 자동 감지 및 적용
+- 유동적인 레이아웃 조정
+
+## 환경 설정
+
+### 환경 변수
+```env
+# API 엔드포인트 설정
+VITE_API_URL=http://localhost:3000
+
+# 재시도 설정
+VITE_MAX_RETRIES=3
+VITE_RETRY_DELAY=1000
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 설치 및 실행
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# 의존성 설치
+npm install
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+# 개발 서버 실행
+npm run dev
+
+# 프로덕션 빌드
+npm run build
 ```
+
+## 특징
+1. **스트리밍 응답**: 실시간으로 응답이 표시되어 사용자 경험 향상
+2. **마크다운 지원**: 코드 블록, 목록, 인용구 등 다양한 마크다운 형식 지원
+3. **자동 저장**: 모든 대화 내용이 자동으로 로컬에 저장
+4. **다크 모드**: 시스템 설정에 따라 자동으로 다크 모드 적용
+5. **에러 복구**: 네트워크 오류 시 자동 재시도 메커니즘
+6. **반응형 디자인**: 다양한 디바이스에서 최적화된 경험 제공
+
+## 주의사항
+- 환경 변수 설정 필요
+- API 키는 서버 측에서 관리
+- 로컬 스토리지 용량 제한 고려

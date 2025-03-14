@@ -4,17 +4,19 @@ import { ChatMessages } from "./components/ChatMessages";
 import { ChatInput } from "./components/ChatInput";
 import { loadMessages, saveMessages } from "./utils/storage";
 import { streamChatResponse } from "./utils/api";
+import type { PerformanceMetrics } from "./utils/api";
 import "./App.css";
 
 /**
  * 채팅 애플리케이션의 메인 컴포넌트
  */
 function App() {
-  // 상태 관리
   const [messages, setMessages] = useState<Message[]>(() => loadMessages());
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useBuffering, setUseBuffering] = useState(true);
+  const [lastMetrics, setLastMetrics] = useState<PerformanceMetrics | null>(null);
   
   // 현재 스트리밍 중인 메시지를 위한 ref
   const currentMessageRef = useRef<Message>({ role: "assistant", content: "" });
@@ -25,8 +27,22 @@ function App() {
   }, [messages]);
 
   /**
+   * 성능 측정 결과 처리
+   */
+  const handleMetrics = (metrics: PerformanceMetrics) => {
+    setLastMetrics(metrics);
+    console.log('Performance Metrics:', {
+      '첫 응답까지 걸린 시간': `${metrics.firstChunkTime}ms`,
+      '전체 응답 시간': `${metrics.totalTime}ms`,
+      '총 청크 수': metrics.chunkCount,
+      '실제 업데이트 횟수': metrics.updateCount,
+      '평균 청크 간격': `${Math.round(metrics.averageChunkInterval)}ms`,
+      '버퍼링 사용': metrics.useBuffering ? '예' : '아니오'
+    });
+  };
+
+  /**
    * 채팅 메시지 전송 및 응답 처리
-   * @param e - 폼 제출 이벤트
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +76,10 @@ function App() {
       (errorMessage) => {
         // 에러 처리
         setError(errorMessage);
-        setMessages(prev => prev.slice(0, -1)); // 실패한 assistant 메시지 제거
-      }
+        setMessages(prev => prev.slice(0, -1));
+      },
+      handleMetrics,
+      useBuffering
     );
 
     setIsLoading(false);
@@ -73,12 +91,24 @@ function App() {
   const handleClearMessages = () => {
     setMessages([]);
     saveMessages([]);
+    setLastMetrics(null);
   };
 
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <h1>GPT 채팅</h1>
+        <div className="header-left">
+          <h1>GPT 채팅</h1>
+          <label className="buffering-toggle">
+            <input
+              type="checkbox"
+              checked={useBuffering}
+              onChange={(e) => setUseBuffering(e.target.checked)}
+              disabled={isLoading}
+            />
+            버퍼링 사용
+          </label>
+        </div>
         <button 
           onClick={handleClearMessages}
           className="clear-button"
@@ -87,6 +117,19 @@ function App() {
           대화 내용 지우기
         </button>
       </div>
+      {lastMetrics && (
+        <div className="metrics-panel">
+          <h3>마지막 응답 성능</h3>
+          <div className="metrics-grid">
+            <div>첫 응답: {lastMetrics.firstChunkTime}ms</div>
+            <div>총 시간: {lastMetrics.totalTime}ms</div>
+            <div>청크 수: {lastMetrics.chunkCount}</div>
+            <div>업데이트: {lastMetrics.updateCount}회</div>
+            <div>평균 간격: {Math.round(lastMetrics.averageChunkInterval)}ms</div>
+            <div>버퍼링: {lastMetrics.useBuffering ? '사용' : '미사용'}</div>
+          </div>
+        </div>
+      )}
       <ChatMessages
         messages={messages}
         isLoading={isLoading}

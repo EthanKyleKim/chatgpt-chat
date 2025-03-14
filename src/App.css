@@ -5,6 +5,12 @@
   --padding-mobile: 1rem;
   --message-max-width-desktop: 70%;
   --message-max-width-mobile: 85%;
+  --input-height: 76px; /* 입력창 기본 높이 (패딩 포함) */
+  --input-height-mobile: 64px; /* 모바일에서의 입력창 높이 */
+}
+
+html {
+  height: 100%;
 }
 
 #root {
@@ -14,17 +20,19 @@
   margin: 0 auto;
   padding: 0;
   text-align: left;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 body {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  overflow: hidden;
+  height: 100%;
   font-size: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .card {
@@ -38,12 +46,13 @@ body {
 .chat-container {
   width: 100%;
   margin: 0 auto;
-  height: 100%;
+  height: calc(100% - var(--input-height)); /* 입력창 높이만큼 제외 */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   padding: var(--padding-desktop);
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 }
 
 .chat-messages {
@@ -54,6 +63,8 @@ body {
   flex-direction: column;
   gap: 16px;
   margin-bottom: 0;
+  padding-bottom: 70px;
+  -webkit-overflow-scrolling: touch; /* iOS 스크롤 부드럽게 */
 }
 
 .message {
@@ -141,10 +152,16 @@ body {
   padding: 1rem;
   background-color: white;
   border-top: 1px solid #E9ECEF;
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   box-sizing: border-box;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  z-index: 1000;
+  height: var(--input-height);
 }
 
 .chat-input {
@@ -204,6 +221,11 @@ body {
 @media (max-width: 768px) {
   .chat-container {
     padding: var(--padding-mobile);
+    height: calc(100% - var(--input-height-mobile)); /* 모바일 입력창 높이만큼 제외 */
+  }
+
+  .chat-messages {
+    padding-bottom: 80px; /* 모바일에서 여백 더 추가 */
   }
 
   .message {
@@ -212,6 +234,7 @@ body {
 
   .chat-input-form {
     padding: 0.75rem;
+    height: var(--input-height-mobile);
   }
 
   .send-button {
@@ -232,6 +255,10 @@ body {
   .chat-input-form {
     padding: 0.5rem;
     gap: 8px;
+  }
+
+  .chat-messages {
+    padding-bottom: 90px; /* 더 작은 화면에서 여백 더 추가 */
   }
 
   .send-button {
